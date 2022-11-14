@@ -9,7 +9,7 @@ import { ViaCEPAddress } from "@/protocols";
 async function getAddressFromCEP(cep: string): Promise<ViaCEPAddress> {
   const result = await request.get(`https://viacep.com.br/ws/${cep}/json/`);
 
-  if (!result.data) {
+  if (!result.data || result.data.erro) {
     throw notFoundError();
   }
 
