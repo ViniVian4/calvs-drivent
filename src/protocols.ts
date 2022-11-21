@@ -19,7 +19,16 @@ export type AddressEnrollment = {
   cidade: string,
   uf: string,
   error?: string
+}
 
+export type TicketsType = {
+  id: number;
+  name: string;
+  price: number;
+  isRemote: boolean;
+  includesHotel: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type RequestError = {
