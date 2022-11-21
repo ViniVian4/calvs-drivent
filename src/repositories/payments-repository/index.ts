@@ -1,4 +1,5 @@
 import { prisma } from "@/config";
+import { Payment } from "@prisma/client";
 
 function findPaymentByTicketId(ticketId: number) {
   return prisma.payment.findFirst({
@@ -8,8 +9,15 @@ function findPaymentByTicketId(ticketId: number) {
   });
 }
 
+function createPayment(newPayment: Omit<Payment, "id" | "createdAt">) {
+  return prisma.payment.create({
+    data: newPayment
+  });
+}
+
 const paymentsRepository = {
-  findPaymentByTicketId
+  findPaymentByTicketId,
+  createPayment
 };
 
 export default paymentsRepository;

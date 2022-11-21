@@ -37,11 +37,23 @@ function findTicketById(ticketId: number) {
   });
 }
 
+function payTicket(ticketId: number) {
+  return prisma.ticket.update({
+    where: {
+      id: ticketId
+    },
+    data: {
+      status: "PAID"
+    }
+  });
+}
+
 const ticketsRepository = {
   findAllTicketsTypes,
   findTicketByEnrollmentId,
   insertNewTicket,
-  findTicketById
+  findTicketById,
+  payTicket
 };
 
 export default ticketsRepository;

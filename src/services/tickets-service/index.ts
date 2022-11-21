@@ -10,7 +10,7 @@ async function listAllTicketsTypes(): Promise<TicketsType[]> {
   return ticketsTypes;
 }
 
-async function getTicketByUserID(userId: number) {
+async function getTicketByUserID(userId: number): Promise<Ticket> {
   const enrollmentId: number = await verifyEnrollmentByUserId(userId);
 
   const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollmentId);
@@ -22,7 +22,7 @@ async function getTicketByUserID(userId: number) {
   return ticket;
 }
 
-async function createNewTicket(ticketTypeId: number, userId: number) {
+async function createNewTicket(ticketTypeId: number, userId: number): Promise<Ticket> {
   const enrollmentId: number = await verifyEnrollmentByUserId(userId);
 
   const newTicket: Omit<Ticket, "id"|"createdAt"> = {
