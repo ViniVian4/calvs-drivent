@@ -24,3 +24,16 @@ export async function getTicket(req: AuthenticatedRequest, res: Response) {
     return res.sendStatus(httpStatus.NOT_FOUND);
   }
 }
+
+export async function postNewTicket(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req as AuthenticatedRequest;
+  const { ticketTypeId }: { ticketTypeId: number } = req.body;
+
+  try {
+    const newTicket = await ticketsService.createNewTicket(ticketTypeId, userId);
+
+    return res.status(httpStatus.CREATED).send(newTicket);
+  } catch (error) {
+    return res.sendStatus(httpStatus.NOT_FOUND);
+  }
+}
