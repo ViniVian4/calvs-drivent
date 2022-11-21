@@ -4,7 +4,7 @@ import enrollmentRepository from "@/repositories/enrollment-repository";
 import { notFoundError } from "@/errors";
 
 async function listAllTicketsTypes(): Promise<TicketsType[]> {
-  const ticketsTypes = await ticketsRepository.findAllTypes();
+  const ticketsTypes = await ticketsRepository.findAllTicketsTypes();
 
   return ticketsTypes;
 }

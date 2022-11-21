@@ -1,6 +1,6 @@
 import { prisma } from "@/config";
 
-async function findAllTypes() {
+async function findAllTicketsTypes() {
   return prisma.ticketType.findMany();
 }
 
@@ -16,7 +16,7 @@ async function findTicketByEnrollmentId(enrollmentId: number) {
 }
 
 const ticketsRepository = {
-  findAllTypes,
+  findAllTicketsTypes,
   findTicketByEnrollmentId,
 };
 
