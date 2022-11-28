@@ -43,6 +43,12 @@ export type PayRequest = {
 	}
 }
 
+export type HotelData = {
+  id: number,
+  image: string,
+  name: string
+}
+
 export type RequestError = {
   status: number,
   data: object | null,
