@@ -2,7 +2,7 @@ import { needPaymentError, unauthorizedError, notFoundError } from "@/errors";
 import enrollmentRepository from "@/repositories/enrollment-repository";
 import hotelRepository from "@/repositories/hotel-repository";
 import ticketRepository from "@/repositories/ticket-repository";
-import { TicketStatus, Hotel } from "@prisma/client";
+import { TicketStatus, Hotel, Room, Booking } from "@prisma/client";
 import { HotelData } from "@/protocols";
 
 async function getHotels(userId: number): Promise<HotelData[]> {
@@ -10,10 +10,17 @@ async function getHotels(userId: number): Promise<HotelData[]> {
   const hotels = await hotelRepository.findAllHotels();
 
   const hotelsData: HotelData[] = hotels.map(hotel => {
+    let availableSpots = 0;
+
+    hotel.Rooms.map(room => {
+      availableSpots += room.capacity - room.Booking.length;
+    });
+    
     return {
       id: hotel.id,
       image: hotel.image,
-      name: hotel.name
+      name: hotel.name,
+      availableSpots
     };
   });
 
@@ -38,7 +45,7 @@ async function checkTicket(userId: number) {
   }
 }
 
-async function getHotelWithRooms(userId: number, hotelId: number) {
+async function getHotelWithRooms(userId: number, hotelId: number): Promise<CompleteHotel> {
   await checkTicket(userId);
   const hotel = await hotelRepository.findHotelByHotelId(hotelId);
 
@@ -47,6 +54,12 @@ async function getHotelWithRooms(userId: number, hotelId: number) {
   }
 
   return hotel;
+}
+
+type CompleteHotel = Hotel & {
+  Rooms: (Room & {
+    Booking: Booking[]
+  })[]
 }
 
 async function getEnrollmentIdByUserId(userId: number): Promise<number> {

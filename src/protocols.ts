@@ -46,7 +46,8 @@ export type PayRequest = {
 export type HotelData = {
   id: number,
   image: string,
-  name: string
+  name: string,
+  availableSpots: number
 }
 
 export type RequestError = {

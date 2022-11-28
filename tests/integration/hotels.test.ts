@@ -11,7 +11,8 @@ import {
   createTicketTypeWithoutHotel,
   createTicketTypeWithHotel,
   createHotel,
-  createRoom
+  createRoom,
+  createBooking
 } from "../factories";
 import { TicketStatus } from "@prisma/client";
 
@@ -110,7 +111,8 @@ describe("GET /hotels", () => {
           expect.objectContaining({
             id: expect.any(Number),
             name: expect.any(String),
-            image: expect.any(String)
+            image: expect.any(String),
+            availableSpots: expect.any(Number)
           })
         ])
       );
@@ -223,7 +225,8 @@ describe("GET /hotels/:hotelId", () => {
       const ticketType = await createTicketTypeWithHotel();
       await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       const hotel = await createHotel();
-      await createRoom(hotel.id);
+      const room = await createRoom(hotel.id);
+      await createBooking(room.id, user.id);
 
       const response = await server.get(`/hotels/${hotel.id}`).set("Authorization", `Bearer ${token}`);
 
@@ -242,7 +245,16 @@ describe("GET /hotels/:hotelId", () => {
               capacity: expect.any(Number),
               hotelId: expect.any(Number),
               createdAt: expect.any(String),
-              updatedAt: expect.any(String)
+              updatedAt: expect.any(String),
+              Booking: [
+                expect.objectContaining({
+                  id: expect.any(Number),
+                  userId: expect.any(Number),
+                  roomId: expect.any(Number),
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                })
+              ]
             })
           ]
         })
