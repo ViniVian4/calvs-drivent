@@ -115,6 +115,21 @@ describe("GET /hotels", () => {
         ])
       );
     });
+
+    it("should respond with status 200 and with hotels empty data", async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithHotel();
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+
+      const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.OK);
+      expect(response.body).toEqual(
+        expect.arrayContaining([])
+      );
+    });
   });
 });
 
@@ -246,16 +261,14 @@ describe("GET /hotels/:hotelId", () => {
 
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: expect.any(Number),
-            name: expect.any(String),
-            image: expect.any(String),
-            createdAt: expect.any(String),
-            updatedAt: expect.any(String),
-            Rooms: []
-          })
-        ])
+        expect.objectContaining({
+          id: expect.any(Number),
+          name: expect.any(String),
+          image: expect.any(String),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          Rooms: []
+        })
       );
     });
   });
