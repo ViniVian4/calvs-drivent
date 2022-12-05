@@ -59,7 +59,7 @@ async function verifyRoom(roomId: number) {
 
   if (!room) {
     throw notFoundError();
-  } else if (room.Booking.length === room.capacity) {
+  } else if (room.Booking.length >= room.capacity) {
     throw unauthorizedError();
   }
 }

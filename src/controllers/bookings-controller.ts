@@ -26,7 +26,7 @@ export async function postBooking(req: AuthenticatedRequest, res: Response) {
   try {
     const bookingId = await bookingService.bookingProcess(userId, roomId);
 
-    return res.status(httpStatus.OK).send(String(bookingId));
+    return res.status(httpStatus.OK).send({ bookingId: bookingId });
   } catch (error) {
     if (error.name === "UnauthorizedError") {
       return res.sendStatus(httpStatus.FORBIDDEN);
@@ -48,7 +48,7 @@ export async function changeBooking(req: AuthenticatedRequest, res: Response) {
   try {
     const newBookingId = await bookingService.changeBooking(userId, roomId, Number(bookingId));
         
-    return res.status(httpStatus.OK).send(String(newBookingId));
+    return res.status(httpStatus.OK).send({ newBookingId: newBookingId });
   } catch (error) {
     if (error.name === "UnauthorizedError") {
       return res.sendStatus(httpStatus.FORBIDDEN);
