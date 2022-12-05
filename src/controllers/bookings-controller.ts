@@ -35,3 +35,25 @@ export async function postBooking(req: AuthenticatedRequest, res: Response) {
     return res.sendStatus(httpStatus.NOT_FOUND);
   }
 }
+
+export async function changeBooking(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
+  const { roomId } = req.body;
+  const { bookingId } = req.params;
+
+  if (!roomId) {
+    return res.sendStatus(httpStatus.BAD_REQUEST);
+  }
+
+  try {
+    const newBookingId = await bookingService.changeBooking(userId, roomId, Number(bookingId));
+        
+    return res.status(httpStatus.OK).send(String(newBookingId));
+  } catch (error) {
+    if (error.name === "UnauthorizedError") {
+      return res.sendStatus(httpStatus.FORBIDDEN);
+    }
+
+    return res.sendStatus(httpStatus.NOT_FOUND);
+  }
+}

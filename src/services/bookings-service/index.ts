@@ -27,13 +27,22 @@ async function bookingProcess(userId: number, roomId: number) {
   await verifyRoom(roomId);
 
   const booking = await bookingRepository.createBooking(userId, roomId);
+
+  return booking.id;
+}
+
+async function changeBooking(userId: number, roomId: number, bookingId: number) {
+  await verifyTicketAndEnrollment(userId);
+  await verifyRoom(roomId);
+
+  const booking = await bookingRepository.updateBooking(bookingId, roomId);
     
   return booking.id;
 }
 
 async function verifyTicketAndEnrollment(userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-    
+
   if (!enrollment || enrollment.userId !== userId) {
     throw unauthorizedError();
   }
@@ -57,7 +66,8 @@ async function verifyRoom(roomId: number) {
 
 const bookingService = {
   listBookings,
-  bookingProcess
+  bookingProcess,
+  changeBooking
 };
 
 export default bookingService;
