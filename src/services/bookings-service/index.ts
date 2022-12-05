@@ -26,18 +26,28 @@ async function bookingProcess(userId: number, roomId: number) {
   await verifyTicketAndEnrollment(userId);
   await verifyRoom(roomId);
 
-  const booking = await bookingRepository.createBooking(userId, roomId);
+  const booking = await bookingRepository.findBookingByUserId(userId);
+  if (booking) {
+    throw unauthorizedError();
+  }
 
-  return booking.id;
+  const newBooking = await bookingRepository.createBooking(userId, roomId);
+
+  return newBooking.id;
 }
 
 async function changeBooking(userId: number, roomId: number, bookingId: number) {
-  await verifyTicketAndEnrollment(userId);
   await verifyRoom(roomId);
+  await verifyTicketAndEnrollment(userId);
 
-  const booking = await bookingRepository.updateBooking(bookingId, roomId);
+  const booking = await bookingRepository.findBookingByUserId(userId);
+  if (!booking || booking.id !== bookingId || booking.userId !== userId) {
+    throw unauthorizedError();
+  }
+
+  const newBooking = await bookingRepository.updateBooking(bookingId, roomId);
     
-  return booking.id;
+  return newBooking.id;
 }
 
 async function verifyTicketAndEnrollment(userId: number) {
