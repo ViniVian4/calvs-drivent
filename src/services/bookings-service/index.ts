@@ -1,6 +1,8 @@
-import { notFoundError } from "@/errors";
+import { notFoundError, unauthorizedError } from "@/errors";
 import bookingRepository from "@/repositories/booking-repository";
 import enrollmentRepository from "@/repositories/enrollment-repository";
+import roomRepository from "@/repositories/room-repository";
+import ticketRepository from "@/repositories/ticket-repository";
 
 async function listBookings(userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
@@ -20,8 +22,42 @@ async function listBookings(userId: number) {
   };
 }
 
+async function bookingProcess(userId: number, roomId: number) {
+  await verifyTicketAndEnrollment(userId);
+  await verifyRoom(roomId);
+
+  const booking = await bookingRepository.createBooking(userId, roomId);
+    
+  return booking.id;
+}
+
+async function verifyTicketAndEnrollment(userId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+    
+  if (!enrollment || enrollment.userId !== userId) {
+    throw unauthorizedError();
+  }
+
+  const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
+
+  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+    throw unauthorizedError();
+  }
+}
+
+async function verifyRoom(roomId: number) {
+  const room = await roomRepository.findRoomById(roomId);
+
+  if (!room) {
+    throw notFoundError();
+  } else if (room.Booking.length === room.capacity) {
+    throw unauthorizedError();
+  }
+}
+
 const bookingService = {
-  listBookings
+  listBookings,
+  bookingProcess
 };
 
 export default bookingService;
