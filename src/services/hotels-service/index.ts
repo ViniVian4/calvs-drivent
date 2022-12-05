@@ -1,80 +1,43 @@
-import { needPaymentError, unauthorizedError, notFoundError } from "@/errors";
-import enrollmentRepository from "@/repositories/enrollment-repository";
 import hotelRepository from "@/repositories/hotel-repository";
+import enrollmentRepository from "@/repositories/enrollment-repository";
 import ticketRepository from "@/repositories/ticket-repository";
-import { TicketStatus, Hotel, Room, Booking } from "@prisma/client";
-import { HotelData } from "@/protocols";
+import { notFoundError } from "@/errors";
+import { cannotListHotelsError } from "@/errors/cannot-list-hotels-error";
 
-async function getHotels(userId: number): Promise<HotelData[]> {
-  await checkTicket(userId);
-  const hotels = await hotelRepository.findAllHotels();
-
-  const hotelsData: HotelData[] = hotels.map(hotel => {
-    let availableSpots = 0;
-
-    hotel.Rooms.map(room => {
-      availableSpots += room.capacity - room.Booking.length;
-    });
-    
-    return {
-      id: hotel.id,
-      image: hotel.image,
-      name: hotel.name,
-      availableSpots
-    };
-  });
-
-  return hotelsData;
-}
-
-async function checkTicket(userId: number) {
-  const enrollmentId = await getEnrollmentIdByUserId(userId);
-
-  const ticket = await ticketRepository.findTicketByEnrollmentId(enrollmentId);
-
-  if (!ticket) {
-    throw unauthorizedError();
+async function listHotels(userId: number) {
+  //Tem enrollment?
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) {
+    throw notFoundError();
   }
+  //Tem ticket pago isOnline false e includesHotel true
+  const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
 
-  if (ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
-    throw unauthorizedError();
-  }
-
-  if (ticket.status !== TicketStatus.PAID) {
-    throw needPaymentError();
+  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+    throw cannotListHotelsError();
   }
 }
 
-async function getHotelWithRooms(userId: number, hotelId: number): Promise<CompleteHotel> {
-  await checkTicket(userId);
-  const hotel = await hotelRepository.findHotelByHotelId(hotelId);
+async function getHotels(userId: number) {
+  await listHotels(userId);
+
+  const hotels = await hotelRepository.findHotels();
+  return hotels;
+}
+
+async function getHotelsWithRooms(userId: number, hotelId: number) {
+  await listHotels(userId);
+  const hotel = await hotelRepository.findRoomsByHotelId(hotelId);
 
   if (!hotel) {
     throw notFoundError();
   }
-
   return hotel;
 }
 
-type CompleteHotel = Hotel & {
-  Rooms: (Room & {
-    Booking: Booking[]
-  })[]
-}
-
-async function getEnrollmentIdByUserId(userId: number): Promise<number> {
-  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-
-  if (!enrollment) {
-    throw unauthorizedError();
-  }
-
-  return enrollment.id;
-}
-
-const hotelsService = {
+const hotelService = {
   getHotels,
-  getHotelWithRooms
+  getHotelsWithRooms,
 };
 
-export default hotelsService;
+export default hotelService;
